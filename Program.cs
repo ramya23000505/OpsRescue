@@ -78,14 +78,17 @@ builder.Services.AddSwaggerGen(opt =>
     });
 });
 
-// CORS for React Frontend
+// CORS for React Frontend (with SignalR support)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.AllowAnyOrigin()
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod()
+              .AllowCredentials());
 });
+
+builder.Services.AddSignalR();
 
 // Dependency Injection
 builder.Services.AddScoped<IAuthInterface, AuthService>();
@@ -94,6 +97,14 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IImpactAnalysisService, ImpactAnalysisService>();
+builder.Services.AddScoped<ISlaRiskService, SlaRiskService>();
+builder.Services.AddScoped<IRecoverySimulationService, RecoverySimulationService>();
+builder.Services.AddScoped<IIncidentService, IncidentService>();
+builder.Services.AddScoped<IExecutionService, ExecutionService>();
+builder.Services.AddScoped<IControlTowerService, ControlTowerService>();
+builder.Services.AddScoped<IPolicyService, PolicyService>();
+builder.Services.AddScoped<ITrustScoreService, TrustScoreService>();
 
 var app = builder.Build();
 
@@ -109,5 +120,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<OpsRescue.Hubs.IncidentHub>("/hubs/incidents");
+app.MapHub<OpsRescue.Hubs.IncidentHub>("/incidentHub");
 
 app.Run();
